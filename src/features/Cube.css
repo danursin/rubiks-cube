@@ -1,0 +1,16 @@
+.cube-scene {
+    height: 200px;
+    width: 200px;
+    perspective: 600px;
+}
+
+.cube {
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 1s;
+}
+
+.cube-face {
+    position: absolute;
+    border: 2px solid black;
+}

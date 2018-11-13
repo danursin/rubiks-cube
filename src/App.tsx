@@ -1,51 +1,74 @@
 import * as React from "react";
 import "./App.css";
-import Cube from "./features/Cube";
-import { CubeAction } from "./types";
-import { RubiksCube } from "./types/RubiksCube";
+import RubiksCube from "./features/RubiksCube";
+import Scene from "./features/Scene";
+import { Color, FaceDirection, Vector } from "./types";
+import { RubiksCubeObject } from "./types/RubiksCubeObject";
 
 interface IAppState {
-    cube: RubiksCube;
-    history: Array<{ action: CubeAction; inverted?: boolean }>;
+    cubeUnitLength: number;
+    rotate: Vector;
+    translate: Vector;
+    colors?: { [key in FaceDirection]?: Color };
+    perspective: number;
 }
 class App extends React.Component<{}, IAppState> {
     constructor(props: {}) {
         super(props);
-        this.state = { cube: new RubiksCube(), history: [] };
-        this.handleTurnClick = this.handleTurnClick.bind(this);
-        this.handleUndoClick = this.handleUndoClick.bind(this);
+
+        const n = 50;
+        this.state = {
+            colors: { back: "blue", bottom: "yellow", front: "green", left: "orange", right: "red", top: "white" },
+            cubeUnitLength: n,
+            perspective: 100000,
+            rotate: [0, 0, 0],
+            translate: [-3 * n, -3 * n, 0]
+        };
+        this.handleRotateChange = this.handleRotateChange.bind(this);
+        this.handleTranslateChange = this.handleTranslateChange.bind(this);
+        this.handlePerspectiveChange = this.handlePerspectiveChange.bind(this);
     }
 
-    public handleTurnClick(action: CubeAction, inverted?: boolean) {
-        const updated = this.state.cube.turn(action, inverted);
-        this.setState({ cube: updated, history: [...this.state.history, { action, inverted }] });
+    public handleRotateChange(event: React.ChangeEvent<HTMLInputElement>) {
+        const name = event.target.name;
+        const split = name.split("-");
+        const value = +event.target.value;
+        const dimension = split[1] as keyof Vector;
+        this.setState({
+            rotate: {
+                ...this.state.rotate,
+                [dimension]: value
+            }
+        });
     }
 
-    public handleUndoClick() {
-        const history = this.state.history.pop();
-        if (!history) {
-            return;
-        }
-        const updated = this.state.cube.turn(history.action, !history.inverted);
-        this.setState({ cube: updated, history: this.state.history });
+    public handleTranslateChange(event: React.ChangeEvent<HTMLInputElement>) {
+        const name = event.target.name;
+        const split = name.split("-");
+        const value = +event.target.value;
+        const dimension = split[1] as keyof Vector;
+        this.setState({
+            translate: {
+                ...this.state.translate,
+                [dimension]: value
+            }
+        });
+    }
+
+    public handlePerspectiveChange(event: React.ChangeEvent<HTMLInputElement>) {
+        const value = +event.target.value;
+        this.setState({
+            perspective: value
+        });
     }
 
     public render() {
         return (
             <div>
-                <Cube cube={this.state.cube} />
-                <ul>{this.state.history.map(item => `${item.action}${item.inverted ? "'" : ""}`).join(", ")}</ul>
-
-                <button type="button" onClick={this.handleTurnClick.bind(this, "F", false)}>
-                    F
-                </button>
-                <button type="button" onClick={this.handleTurnClick.bind(this, "F", true)}>
-                    F '
-                </button>
-
-                <button type="button" onClick={this.handleUndoClick}>
-                    UNDO action
-                </button>
+                <Scene perspective={this.state.perspective}>
+                    <RubiksCube cube={new RubiksCubeObject(this.state.cubeUnitLength)} />
+                    {/* <Cube rotate={this.state.rotate} translate={this.state.translate} colors={this.state.colors} /> */}
+                </Scene>
             </div>
         );
     }

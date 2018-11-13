@@ -5,3 +5,7 @@ export interface IPerspective {
     right: Color;
 }
 export type CubeAction = "F" | "B" | "U" | "D" | "L" | "R";
+
+export type FaceDirection = "front" | "back" | "right" | "left" | "top" | "bottom";
+
+export type Vector = [number, number, number];
